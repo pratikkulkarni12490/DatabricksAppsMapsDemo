@@ -1,0 +1,31 @@
+command:
+  - "sh"
+  - "-c"
+  # Apps runs npm install / npm run build when package.json is present; the guard rebuilds only if dist is missing.
+  - "test -f dist/index.html || (npm install --no-audit --no-fund && npm run build); exec python -m uvicorn app:app --host 0.0.0.0 --port 8000 --workers ${UVICORN_WORKERS:-4} --timeout-keep-alive 75"
+
+env:
+  - name: LAKEBASE_BRANCH
+    value: "projects/geo-retail-serving/branches/production"
+  - name: LAKEBASE_RW_ENDPOINT_ID
+    value: "primary"
+  - name: LAKEBASE_RO_ENDPOINT_ID
+    value: "replica-1"
+  - name: PG_RW_HOST
+    value: "<lakebase-primary-endpoint-host>"
+  - name: PG_RW_DIRECT_HOST
+    value: "<lakebase-primary-endpoint-host>"
+  - name: PG_RO_HOST
+    value: "<lakebase-replica-endpoint-host>"
+  - name: PGDATABASE
+    value: "databricks_postgres"
+  - name: LLM_ENDPOINT
+    valueFrom: "llm"
+  - name: DATABRICKS_WORKSPACE_ID
+    value: "<databricks-workspace-id>"
+  - name: UC_CATALOG
+    value: "geolens_demo"
+  - name: THREADPOOL_SIZE
+    value: "64"
+  - name: SIMULATOR_ENABLED
+    value: "true"

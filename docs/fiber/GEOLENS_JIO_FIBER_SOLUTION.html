@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GeoLens for Jio Fiber: Network Control Center on Databricks</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm 15mm; }
+  :root { --ink: #0b0b0b; --ink2: #3d3c39; --muted: #77766f; --line: #e3e2de; --soft: #f4f4f2; --brand: #1b3139; --accent: #2a78d6; --good: #0ca30c; --crit: #d03b3b; }
+  * { box-sizing: border-box; }
+  body { font: 10.5pt/1.5 Inter, 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; color: var(--ink); margin: 0; }
+  h1 { font-size: 26pt; line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.3px; }
+  h2 { font-size: 16pt; margin: 0 0 8px; padding-top: 4px; color: var(--brand); break-after: avoid; }
+  h3 { font-size: 12pt; margin: 18px 0 6px; break-after: avoid; }
+  p { margin: 0 0 8px; }
+  ul { margin: 0 0 10px; padding-left: 18px; } li { margin: 2px 0; }
+  .section { break-before: page; }
+  .muted { color: var(--muted); }
+  .kicker { text-transform: uppercase; letter-spacing: 1.2px; font-size: 8.5pt; color: var(--accent); font-weight: 700; margin-bottom: 4px; }
+  /* cover */
+  .cover { height: 255mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .cover-top { padding-top: 30mm; }
+  .cover .sub { font-size: 13pt; color: var(--ink2); max-width: 150mm; }
+  .cover img { width: 100%; border-radius: 8px; border: 1px solid var(--line); margin-top: 14mm; }
+  .cover-foot { display: flex; justify-content: space-between; font-size: 9pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+  /* elements */
+  table { border-collapse: collapse; width: 100%; font-size: 9pt; margin: 6px 0 12px; break-inside: avoid; }
+  th { background: var(--soft); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  td { padding: 5px 8px; border-bottom: 1px solid #eeede9; vertical-align: top; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pass { color: var(--good); font-weight: 700; }
+  figure { margin: 8px 0 14px; break-inside: avoid; }
+  figure img { width: 100%; border: 1px solid var(--line); border-radius: 6px; display: block; }
+  figcaption { font-size: 8.8pt; color: var(--muted); margin-top: 4px; }
+  .callout { background: var(--soft); border-left: 3px solid var(--accent); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 8px 0 12px; break-inside: avoid; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0 14px; }
+  .kpi { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .kpi b { display: block; font-size: 15pt; font-variant-numeric: tabular-nums; }
+  .kpi span { font-size: 8.5pt; color: var(--muted); }
+  .toc { list-style: none; padding: 0; columns: 2; font-size: 10pt; }
+  .toc li { padding: 3px 0; border-bottom: 1px dotted var(--line); }
+  /* architecture diagram */
+  .arch { display: grid; grid-template-columns: 1fr 22px 1fr 22px 1fr 22px 1fr; align-items: stretch; margin: 10px 0 6px; break-inside: avoid; }
+  .tier { border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: #fff; font-size: 8.6pt; }
+  .tier h4 { margin: 0 0 6px; font-size: 9.5pt; color: var(--brand); }
+  .tier div { background: var(--soft); border-radius: 5px; padding: 4px 6px; margin: 4px 0; }
+  .arrow { display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 14pt; font-weight: 700; }
+  .step { display: flex; gap: 10px; align-items: baseline; }
+  .step .n { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--brand); color: #fff; font-size: 9pt; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  code { font: 8.8pt ui-monospace, Menlo, monospace; background: var(--soft); padding: 0 3px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="kicker">Solution overview · Jio Fiber Home</div>
+    <h1>GeoLens: a spatial Network Control Center for Jio Fiber, built on Databricks</h1>
+    <p class="sub">One live map of network health, incidents, field force and capacity across eight metros. Served from Lakebase in milliseconds, governed by Unity Catalog, and delivered as a Databricks App that operations teams use with drag and drop.</p>
+    <img src="img/f05_national_health.png" alt="GeoLens Jio Fiber Control Center, national view">
+  </div>
+  <div class="cover-foot"><span>Prepared for Reliance Jio</span><span>October 2026</span></div>
+</div>
+
+<!-- CONTENTS + SUMMARY -->
+<div class="section">
+  <div class="kicker">Contents</div>
+  <ul class="toc">
+    <li>1. Executive summary</li><li>2. The operational challenge</li>
+    <li>3. The data we modelled</li><li>4. Solution architecture</li>
+    <li>5. Inside Lakebase</li><li>6. Security and access control</li>
+    <li>7. The storyline: a day in the NOC</li><li>8. Always current: data freshness</li>
+    <li>9. End-to-end test results</li><li>10. Scale and performance</li>
+    <li>Appendix A. Metric definitions</li><li>Appendix B. Glossary</li><li>Appendix C. Technology stack</li><li>Appendix D. Basemap: removing the CARTO dependency</li>
+  </ul>
+
+  <h2 style="margin-top:14px">1. Executive summary</h2>
+  <p>Jio Fiber operations teams need a single, trusted view of how the network is performing for customers, where it is failing right now, and where the field force should go next. GeoLens provides that view as an interactive map built on the Databricks Data Intelligence Platform, in the spirit of commercial location-intelligence tools, but running entirely on the customer's own lakehouse data and governance.</p>
+  <div class="kpis">
+    <div class="kpi"><b>5.9 M</b><span>subscriber homes modelled across 8 metros</span></div>
+    <div class="kpi"><b>5,841</b><span>OLTs and 24,261 FDH cabinets on the map</span></div>
+    <div class="kpi"><b>~13 ms</b><span>median server time per map tile (p95 35 ms)</span></div>
+    <div class="kpi"><b>&lt; 1 min</b><span>from a Delta table change to every open map, no reload</span></div>
+  </div>
+  <ul>
+    <li><b>See the whole network at a glance.</b> H3 hexagons colour every area of every metro by a 0 to 100 network health score built from uptime, optical margin, latency, loss, throughput and trouble tickets. Fixed operational bands keep healthy areas calm and make real problems stand out.</li>
+    <li><b>Act on live incidents.</b> Open incidents appear on the map from the first screen, coloured by severity. Critical (P1) incidents keep glowing until they are resolved. One click shows impact, root cause and the nearest available technicians, and dispatches one.</li>
+    <li><b>Drill without losing context.</b> Click any hexagon to zoom into exactly that area, then keep clicking down to street level. A breadcrumb and a Back button return you to where you were.</li>
+    <li><b>Build views with drag and drop.</b> A data catalog of 17 layers (incidents, technicians, health, uptime, optical power, capacity, growth and cross-sell) can be dragged onto the map or into widgets.</li>
+    <li><b>Governed by design.</b> Region and metro entitlements are defined once in Unity Catalog and enforced both by Unity Catalog row filters and by Postgres row-level security in Lakebase. A Delhi NOC lead only ever sees Delhi.</li>
+    <li><b>Ask in plain language.</b> An AI assistant built on Databricks Foundation Model APIs answers questions such as "which OLTs will run out of capacity first?" and moves the map to show the answer.</li>
+  </ul>
+</div>
+
+<!-- CHALLENGE -->
+<div class="section">
+  <h2>2. The operational challenge</h2>
+  <p>A home broadband network at Jio's scale generates signals from many systems: network management alarms, ONT optical telemetry, OLT port utilisation, trouble tickets, workforce positions and the subscriber base. Each team typically sees one slice in one tool. The questions the NOC and regional leadership actually ask are spatial and cross-cutting:</p>
+  <table>
+    <tr><th>Persona</th><th>Questions they need answered in seconds</th></tr>
+    <tr><td><b>NOC lead</b></td><td>What is broken right now, how many homes are affected, which incidents are critical, and who is the nearest available technician?</td></tr>
+    <tr><td><b>Regional head</b></td><td>Which localities in my region have degrading customer experience this week, and is it optical, capacity or field related?</td></tr>
+    <tr><td><b>Capacity planner</b></td><td>Which OLTs are exhausted or will exhaust within six months, and where should we augment or split PON ports?</td></tr>
+    <tr><td><b>Field operations</b></td><td>Where are my technicians, who is free, and are dispatches matching incident severity?</td></tr>
+    <tr><td><b>Growth and sales</b></td><td>Where are homes passed but not connected, where is premium plan mix low, and where are Reliance Retail customers who do not yet have Jio Fiber?</td></tr>
+  </table>
+  <p>The solution therefore had to meet five requirements that were set at the start:</p>
+  <ul>
+    <li><b>Hexagon maps</b> of network KPIs at multiple resolutions, from national down to street level.</li>
+    <li><b>Fast responses</b> for thousands of concurrent users, so the serving layer must be an operational database (Lakebase), not a warehouse.</li>
+    <li><b>Live updates</b>: the map must refresh by itself as new data lands, with no page reload.</li>
+    <li><b>Region-scoped access</b> managed centrally through Unity Catalog and Postgres row-level security.</li>
+    <li><b>Drag and drop</b>: adding information to the map should not require code or SQL.</li>
+  </ul>
+</div>
+
+<!-- DATA -->
+<div class="section">
+  <h2>3. The data we modelled</h2>
+  <p>To demonstrate behaviour at realistic scale without using customer data, we generated a synthetic but internally consistent Jio Fiber network for eight metros: Mumbai MMR, Pune and Ahmedabad (West), Delhi NCR (North), Bengaluru, Hyderabad and Chennai (South), and Kolkata (East). Every dataset is keyed to the same geography so that layers line up exactly on the map.</p>
+  <table>
+    <tr><th>Dataset</th><th>What it represents</th><th>Grain</th><th class="num">Volume</th></tr>
+    <tr><td>Demographic grid</td><td>Population and households on a fine hexagon grid, the base for coverage and penetration</td><td>H3 res 9 cell</td><td class="num">160,148 cells · 72.4 M people</td></tr>
+    <tr><td>OLTs</td><td>Optical Line Terminals with vendor model, PON ports, split ratio, homes passed and connected, utilisation, capacity status</td><td>OLT</td><td class="num">5,841</td></tr>
+    <tr><td>FDH cabinets</td><td>Fiber distribution hubs (splitter cabinets) with 7-day health</td><td>Cabinet</td><td class="num">24,261</td></tr>
+    <tr><td>Subscribers</td><td>Connected homes with plan, tenure and serving OLT and FDH</td><td>Home</td><td class="num">5,904,185</td></tr>
+    <tr><td>Homes passed</td><td>Homes within reach of the fiber network</td><td>OLT area</td><td class="num">13.3 M</td></tr>
+    <tr><td>Fiber routes</td><td>Feeder and distribution cable segments as line geometry, with 30-day cut counts</td><td>Segment</td><td class="num">30,102</td></tr>
+    <tr><td>Network incidents</td><td>Fiber cuts, LOS alarm clusters, power failures, FDH damage, card failures, planned work; severity P1 to P4, homes impacted, root cause</td><td>Incident</td><td class="num">25,605 (30 days)</td></tr>
+    <tr><td>Trouble tickets</td><td>Customer complaints linked to homes and incidents</td><td>Ticket</td><td class="num">318,874</td></tr>
+    <tr><td>Technicians</td><td>Field force with skill, shift, status and live position</td><td>Technician</td><td class="num">6,673</td></tr>
+    <tr><td>OLT hourly telemetry</td><td>Port utilisation, uplink utilisation, alarms and status per hour</td><td>OLT × hour</td><td class="num">4.24 M rows</td></tr>
+    <tr><td>Network experience, daily</td><td>Health score, uptime, optical power, latency, loss, throughput, tickets, incidents per hexagon per day, rolled up at five resolutions</td><td>H3 res 5 to 9 × day</td><td class="num">5.23 M rows</td></tr>
+    <tr><td>Daily KPIs</td><td>Metro-level network KPIs for trend lines</td><td>Metro × day</td><td class="num">240</td></tr>
+    <tr><td>Access entitlements</td><td>Which person or role may see which region or metro</td><td>Principal × scope</td><td class="num">12 rules</td></tr>
+  </table>
+  <h3>Realism built into the data</h3>
+  <ul>
+    <li><b>Thirty days of history</b> (10 September to 9 October 2026) with daily and hourly patterns, so trends, weekly comparisons and sparklines behave like production data.</li>
+    <li><b>Network vintage matters.</b> Each OLT area has a build year. Older areas show weaker optical margins and more faults, which is how real fiber estates age.</li>
+    <li><b>Named stress events</b> make the story visible: a three-day cyclone in Chennai drives a cluster of power failures and cable cuts, and construction activity in Gurugram drives repeated distribution cuts.</li>
+    <li><b>Correlated signals.</b> Cell-level noise is blended with OLT-level effects, so a failing OLT degrades every hexagon it serves, as in a real PON tree.</li>
+    <li><b>Capacity pressure</b> is concentrated in dense localities, producing exhausted OLTs and "augment within six months" candidates for the planner.</li>
+    <li><b>Live operations.</b> In this environment a simulator inside the app raises new incidents every few seconds, moves technicians towards jobs and resolves incidents. In production the same tables are fed by the network management system, OSS alarms and the workforce management system.</li>
+  </ul>
+  <div class="callout">All data in this document is synthetic and was created for the demonstration. Table structures, grain and metric definitions are designed to map directly to Jio's real NMS, OSS, BSS and workforce sources.</div>
+</div>
+
+<!-- ARCHITECTURE -->
+<div class="flow" style="margin-top:14px">
+  <h2>4. Solution architecture</h2>
+  <p>The design keeps one copy of the truth in the lakehouse and pushes a serving copy into Lakebase, the Databricks managed Postgres database, for low-latency map queries. Governance is defined once in Unity Catalog and enforced at both layers.</p>
+  <div class="arch">
+    <div class="tier"><h4>Sources</h4><div>NMS / OSS alarms</div><div>ONT and OLT telemetry</div><div>Trouble tickets</div><div>Workforce system</div><div>Subscriber base (BSS)</div><div>Census and household grid</div></div>
+    <div class="arrow">→</div>
+    <div class="tier"><h4>Lakehouse (Unity Catalog)</h4><div>Bronze: raw feeds</div><div>Silver: cleaned, geocoded, H3 indexed</div><div>Gold: KPI rollups at H3 res 5 to 9</div><div>Row filters on 17 gold tables</div><div>Entitlements table</div></div>
+    <div class="arrow">→</div>
+    <div class="tier"><h4>Lakebase (Postgres)</h4><div>Synced tables from gold</div><div>PostGIS vector tiles</div><div>Row-level security views</div><div>Live incident and technician tables</div><div>Change tracking and notifications</div><div>Read replica for map traffic</div></div>
+    <div class="arrow">→</div>
+    <div class="tier"><h4>Databricks App</h4><div>API with tile cache and ETags</div><div>Server-sent events for live push</div><div>React, deck.gl and MapLibre map</div><div>AI assistant on Foundation Model APIs</div><div>Single sign-on with workspace identity</div></div>
+  </div>
+  <p class="muted" style="font-size:9pt">Figure 1. Data flows left to right. Entitlements flow from Unity Catalog into Lakebase so both layers enforce the same scope.</p>
+
+  <h3>Key design choices</h3>
+  <table>
+    <tr><th>Choice</th><th>Why</th></tr>
+    <tr><td>H3 hexagons at resolutions 5 to 9</td><td>Equal-area cells that aggregate cleanly. The map picks a resolution from the zoom level and requests fixed tiles of at most 343 cells, so every request is small and cacheable.</td></tr>
+    <tr><td>Lakebase as the serving layer</td><td>Map interactions need single-digit to tens of milliseconds per request and thousands of concurrent users. Lakebase gives Postgres latency and concurrency, with tables synced from Unity Catalog instead of hand-built ETL.</td></tr>
+    <tr><td>Read replica for map traffic</td><td>Tile and point reads go to a read-only endpoint; writes (dispatches, saved views) go to the primary.</td></tr>
+    <tr><td>PostGIS vector tiles</td><td>Fiber routes are line geometry. PostGIS renders them as vector tiles on demand, so tens of thousands of cable segments stay fast.</td></tr>
+    <tr><td>Push, not poll</td><td>Postgres notifications drive server-sent events to every open browser. Only the layers whose data changed are refetched.</td></tr>
+    <tr><td>One entitlement model</td><td>The same region and metro scope table drives Unity Catalog row filters for analysts and Postgres row-level security for app users.</td></tr>
+  </table>
+</div>
+
+<!-- LAKEBASE -->
+<div class="section">
+  <h2>5. Inside Lakebase</h2>
+  <p>The screenshots below were captured live from the Lakebase endpoint during end-to-end testing. They show the synced Jio Fiber tables, sample rows the map reads, the live operational tables the app writes, and the change tracking that drives automatic refresh.</p>
+  <figure><img src="img/lb01_tables.png" alt="Synced tables in Lakebase"><figcaption>Figure 2. Jio Fiber tables synced from Unity Catalog gold into Lakebase, with exact row counts. Row counts match the Delta source table for table.</figcaption></figure>
+  <figure><img src="img/lb02_olts.png" alt="OLT inventory in Lakebase"><figcaption>Figure 3. OLT inventory as served to the map: the most loaded Mumbai OLTs, already exhausted and flagged for augmentation.</figcaption></figure>
+</div>
+<div class="flow">
+  <figure><img src="img/lb03_hex.png" alt="H3 health cells in Lakebase"><figcaption>Figure 4. Daily network experience per H3 hexagon. The map requests these by tile and colours each cell by health score.</figcaption></figure>
+  <figure><img src="img/lb04_live.png" alt="Live incidents in Lakebase"><figcaption>Figure 5. Live incidents written by the operations feed every few seconds, with assigned technicians. A database trigger notifies the app on every change.</figcaption></figure>
+  <figure><img src="img/lb06_versions.png" alt="Dataset versions"><figcaption>Figure 6. Dataset versions. When a synced table refreshes, its dataset version increases and every open map refetches only that layer.</figcaption></figure>
+</div>
+
+<!-- SECURITY -->
+<div class="section">
+  <h2>6. Security and access control</h2>
+  <p>Access is defined once, in a Unity Catalog table that maps each person or role to a scope: national, one or more regions, or one or more metros. That single definition is enforced in two places.</p>
+  <ul>
+    <li><b>Unity Catalog row filters</b> on all 17 gold tables. Analysts using SQL, notebooks, dashboards or Genie only see rows in their scope.</li>
+    <li><b>Postgres row-level security in Lakebase.</b> The app reads through security-barrier views that apply the same scope to every query. The scope is resolved once per query, so enforcement adds no measurable latency.</li>
+    <li><b>Least privilege for the app.</b> The app's identity can read only the secured views and write only to its own operational tables. It cannot bypass row-level security.</li>
+    <li><b>Workspace single sign-on.</b> Users reach the app with their Databricks identity. Presenters can switch to demonstration personas to show what each role sees.</li>
+  </ul>
+  <figure><img src="img/lb05_rls.png" alt="Row-level security in Lakebase"><figcaption>Figure 7. The same query in Lakebase returns different rows for each persona. A user with no entitlement sees nothing.</figcaption></figure>
+  <table>
+    <tr><th>Persona</th><th>Scope</th><th class="num">OLTs visible in Lakebase</th><th class="num">OLTs visible via Unity Catalog filter</th></tr>
+    <tr><td>National view</td><td>All India</td><td class="num">5,841</td><td class="num">5,841</td></tr>
+    <tr><td>Regional Head, West</td><td>West region</td><td class="num">2,089</td><td class="num">2,089</td></tr>
+    <tr><td>Cluster Manager, Mumbai MMR</td><td>Mumbai metro</td><td class="num">1,152</td><td class="num">1,152</td></tr>
+    <tr><td>NOC Lead, Delhi NCR</td><td>Delhi metro</td><td class="num">1,572</td><td class="num">1,572</td></tr>
+    <tr><td>Ops Lead, South + Mumbai</td><td>South region and Mumbai metro</td><td class="num">2,773</td><td class="num">2,773</td></tr>
+    <tr><td>User with no entitlement</td><td>None</td><td class="num">0</td><td class="num">0</td></tr>
+  </table>
+  <figure><img src="img/f11_persona_delhi.png" alt="Delhi NOC lead view"><figcaption>Figure 8. The same app viewed as the NOC Lead for Delhi NCR. The metro list, KPIs, map and widgets all contain Delhi only.</figcaption></figure>
+</div>
+
+<!-- STORYLINE -->
+<div class="section">
+  <h2>7. The storyline: a day in the NOC</h2>
+  <p>This walkthrough follows a NOC lead through a typical session. Every screenshot was captured from the deployed app during the end-to-end test run described in section 9.</p>
+
+  <h3><span class="step"><span class="n">1</span>Land on what matters: live incidents</span></h3>
+  <p>The control center opens on the national view with only live incidents switched on, so nothing distracts from what is broken right now. Each dot is an open incident coloured by severity. Critical P1 incidents glow continuously until they are fixed. The KPI strip shows homes connected, network health, open incidents, homes impacted, field force and capacity at a glance. Network health and technicians are already in the layer list, switched off, ready when needed.</p>
+  <figure><img src="img/f01_landing.png" alt="Landing view"><figcaption>Figure 9. Landing view: open incidents only, with P1 incidents glowing.</figcaption></figure>
+</div>
+<div class="flow">
+  <h3><span class="step"><span class="n">2</span>Watch the live feed and triage</span></h3>
+  <p>The live feed lists the newest incidents as they arrive. Clicking one flies the map to it and opens the incident panel: type, severity, homes impacted, start time, root cause and the five nearest available technicians with their skills and distance.</p>
+  <div class="two">
+    <figure><img src="img/f02_livefeed.png" alt="Live feed"><figcaption>Figure 10. Live feed of incoming incidents.</figcaption></figure>
+    <figure><img src="img/f03_incident.png" alt="Incident panel"><figcaption>Figure 11. Incident panel with nearest available technicians.</figcaption></figure>
+  </div>
+  <h3><span class="step"><span class="n">3</span>Dispatch in one click</span></h3>
+  <p>Dispatch assigns the chosen technician. The assignment is written to Lakebase, every connected screen is notified, and the technician starts moving towards the job on the map.</p>
+  <figure><img src="img/f04_dispatch.png" alt="Dispatch"><figcaption>Figure 12. Technician dispatched; the incident now shows the assignment.</figcaption></figure>
+</div>
+<div class="flow">
+  <h3><span class="step"><span class="n">4</span>Turn on network health across India</span></h3>
+  <p>Ticking Network health score adds customer experience to the map. At national zoom, cells are rolled up into larger hexagons so each metro stays readable. Colours use fixed operational bands (red below 60, blue above 90), so a red area means a real problem, not just the worst of a good set.</p>
+  <figure><img src="img/f05_national_health.png" alt="National health"><figcaption>Figure 13. National view with network health and technicians switched on.</figcaption></figure>
+  <h3><span class="step"><span class="n">5</span>Drill into a hexagon without losing your place</span></h3>
+  <p>Clicking a hexagon zooms to exactly that area and shows only the detail inside it. A breadcrumb records the path, and Back returns to the previous view.</p>
+  <figure><img src="img/f06_drill_city.png" alt="Drill into a city"><figcaption>Figure 14. One click on a national hexagon drills into Ahmedabad, showing only the cells, incidents and technicians inside it.</figcaption></figure>
+</div>
+<div class="flow">
+  <figure><img src="img/f07_drill_deeper.png" alt="Drill deeper"><figcaption>Figure 15. A second click goes one level deeper and opens the cell's full metrics: health, uptime, optical power, latency, loss, throughput, tickets and outage impact.</figcaption></figure>
+  <h3><span class="step"><span class="n">6</span>Focus on one metro</span></h3>
+  <p>Choosing a metro in the top bar restricts everything on screen to that metro: map, KPIs, widgets, live feed and the AI assistant. The histogram and top-cells widgets recompute for the area in view, and a click on any bar filters the map.</p>
+  <figure><img src="img/f08_mumbai.png" alt="Mumbai focus"><figcaption>Figure 16. Mumbai MMR only: health hexagons, live incidents and technicians, with widgets scoped to Mumbai.</figcaption></figure>
+</div>
+<div class="flow">
+  <figure><img src="img/f09_mumbai_cell.png" alt="Street level cell"><figcaption>Figure 17. Street-level drill in Mumbai: a single neighbourhood cell with its child hexagons and full metrics.</figcaption></figure>
+  <h3><span class="step"><span class="n">7</span>Ask GeoLens</span></h3>
+  <p>The assistant answers operational questions in plain language. It queries the same governed data the map uses, respects the user's scope and the selected metro, and acts on the map: it adds layers, flies to places, highlights cells and opens the relevant OLT.</p>
+  <figure><img src="img/f10_chat.png" alt="AI assistant"><figcaption>Figure 18. "Which OLTs will run out of capacity first and where are they?" The assistant lists the exhausted Mumbai OLTs with PON fill and peak utilisation, adds the OLT layer and opens the most critical one.</figcaption></figure>
+</div>
+<div class="flow">
+  <h3><span class="step"><span class="n">8</span>Build your own view with drag and drop</span></h3>
+  <p>The data catalog on the left groups 17 layers into Operations, Experience, Growth and Network. Users drag a layer onto the map or into the widget rail, reorder layers by dragging, change the metric, colour and size, and save the view to share with colleagues. No SQL or code is needed.</p>
+  <table>
+    <tr><th>Group</th><th>Layers available</th></tr>
+    <tr><td>Operations</td><td>Live incidents, field technicians, incident history (30 days)</td></tr>
+    <tr><td>Experience</td><td>Network health score, uptime, optical power, latency, trouble tickets, outage impact</td></tr>
+    <tr><td>Growth</td><td>Penetration, sales opportunity (passed, not connected), build-out opportunity, premium plan mix, Reliance Retail cross-sell</td></tr>
+    <tr><td>Network</td><td>OLTs by capacity status, FDH cabinets by health, fiber routes with cuts highlighted</td></tr>
+  </table>
+  <h3><span class="step"><span class="n">9</span>See only what you are entitled to</span></h3>
+  <p>Switching to the Delhi NOC persona (Figure 8) shows the entitlement model at work: the same app, the same map, but only Delhi data, enforced in the database rather than in the screen.</p>
+
+  <h2 style="margin-top:18px">8. Always current: data freshness</h2>
+  <p>Two kinds of change reach the map automatically, with no page reload.</p>
+  <ul>
+    <li><b>Live operations</b> (new incidents, dispatches, technician movement, resolutions) are written to Lakebase and pushed to every open browser within seconds through Postgres notifications and server-sent events.</li>
+    <li><b>Analytical refreshes</b> (new daily KPIs, updated OLT inventory, new incidents in the lakehouse) arrive through synced tables. The app detects the new table version, increases the dataset version and tells every open map to refetch only the affected layers.</li>
+  </ul>
+  <p>Most of this time is the synced-table refresh itself. Refreshes can be scheduled or triggered when the upstream gold table changes; live operational data does not wait for them.</p>
+  <table>
+    <tr><th>Measured during testing (OLT inventory change)</th><th class="num">Run 1</th><th class="num">Run 2</th></tr>
+    <tr><td>Update written to the Delta table in Unity Catalog</td><td class="num">0 s</td><td class="num">0 s</td></tr>
+    <tr><td>Synced table refresh triggered</td><td class="num">6 s</td><td class="num">5 s</td></tr>
+    <tr><td>Change detected; "dataset changed" event pushed to all open maps</td><td class="num">32 s</td><td class="num">56 s</td></tr>
+    <tr><td>App serving the new value</td><td class="num">33 s</td><td class="num">58 s</td></tr>
+    <tr><td>Open browser updated its widgets after the event (no reload)</td><td class="num">1 to 2 s</td><td class="num">1 to 2 s</td></tr>
+  </table>
+</div>
+
+<!-- TESTS -->
+<div class="section">
+  <h2>9. End-to-end test results</h2>
+  <p>The deployed solution was tested end to end on 11 October 2026: platform, API, security, data parity, live updates, freshness and the full browser storyline. Browser tests used real mouse clicks in a headless Chrome session against the production app URL.</p>
+  <table>
+    <tr><th>Area</th><th>What was checked</th><th>Result</th></tr>
+    <tr><td>Platform</td><td>App running on 4 instances; Lakebase primary and read replica active; PostgreSQL 17 with PostGIS 3.5</td><td class="pass">Pass</td></tr>
+    <tr><td>API</td><td>Every route: metadata, catalog, H3 tiles, ETag revalidation (304), points, vector tiles, KPIs, OLT and incident detail, live feed (full and delta), dispatch, saved views, health, event stream</td><td class="pass">Pass (all routes)</td></tr>
+    <tr><td>Postgres row-level security</td><td>Five personas plus a user with no entitlement, on OLTs, stores, health cells and live tables</td><td class="pass">Pass</td></tr>
+    <tr><td>Unity Catalog governance</td><td>Row filters attached to all 17 gold tables; filter logic per persona returns exactly the Lakebase counts</td><td class="pass">Pass</td></tr>
+    <tr><td>Data parity</td><td>Row counts identical in gold Delta, the serving copy and Lakebase (for example 5,225,190 health rows, 5,841 OLTs, 25,605 incidents)</td><td class="pass">Pass</td></tr>
+    <tr><td>Live operations</td><td>Simulator leader active; incidents and technician positions updated within seconds; live events received over the stream</td><td class="pass">Pass</td></tr>
+    <tr><td>Freshness</td><td>Delta change to app in 33 to 58 s across runs; open browser updated without reload</td><td class="pass">Pass</td></tr>
+    <tr><td>Browser storyline</td><td>13 scripted steps (Section 7): landing, live feed, incident, dispatch, national health, two-level drill, Back, metro focus, street-level cell, AI assistant, persona</td><td class="pass">Pass, 13 of 13</td></tr>
+    <tr><td>Browser health</td><td>Console errors and failed app requests across the full walkthrough (about 790 API requests)</td><td class="pass">0 errors, 0 failures</td></tr>
+  </table>
+  <h3>Improvements made as a result of testing</h3>
+  <table>
+    <tr><th>Observation</th><th>Change</th></tr>
+    <tr><td>Health hexagons were too small to see at national zoom</td><td>Cells now roll up into larger hexagons when zoomed out (sums for counts, averages for rates), and remain clickable</td></tr>
+    <tr><td>Drilling a national hexagon framed a mostly empty area</td><td>Drill now fits the area that actually contains data</td></tr>
+    <tr><td>The breadcrumb ran under the details panel</td><td>Breadcrumb now centres on the visible part of the map</td></tr>
+    <tr><td>The assistant panel covered the details panel</td><td>The assistant now opens beside the details panel</td></tr>
+    <tr><td>Catalog marked switched-off layers as "on map"</td><td>Catalog now distinguishes "on map" from "off", and adding a switched-off layer turns it on</td></tr>
+    <tr><td>Empty widgets after drilling into a quiet area</td><td>Widgets now say "None in this area"</td></tr>
+    <tr><td>P1 glow was faint at metro zoom</td><td>Glow and ripple made stronger and consistent at every zoom</td></tr>
+  </table>
+</div>
+
+<!-- SCALE -->
+<div class="section">
+  <h2>10. Scale and performance</h2>
+  <p>Load tests ran from a Databricks serverless job in the same cloud region as the app, simulating map users who pan, zoom and refresh with HTTP/2 connections, as browsers do.</p>
+  <table>
+    <tr><th>Scenario</th><th class="num">Throughput</th><th class="num">Errors</th><th class="num">Server time per tile</th></tr>
+    <tr><td>150 users, no think time (saturation)</td><td class="num">299 req/s</td><td class="num">0</td><td class="num">p50 12.8 ms · p95 35 ms</td></tr>
+    <tr><td>1,000 users on 1 app instance</td><td class="num">206 req/s</td><td class="num">0.07%</td><td class="num">p50 18 ms</td></tr>
+    <tr><td>1,000 users on 4 app instances</td><td class="num">182 req/s</td><td class="num">connection limits</td><td class="num">p50 24 ms</td></tr>
+  </table>
+  <ul>
+    <li><b>The data layer is not the bottleneck.</b> Lakebase and the app answer each map tile in tens of milliseconds even under saturation, thanks to tile-sized queries, a shared cache with version-aware keys, ETag revalidation and the read replica.</li>
+    <li><b>Single-source load tests hit an ingress limit.</b> All simulated users came from one machine and one identity. Throughput levelled off at 200 to 300 requests per second regardless of instance count, and most client-side wait happened before requests reached the app. Real users arrive from many devices and identities and are not limited this way.</li>
+    <li><b>Validating thousands of real users</b> calls for a distributed, multi-identity test. The architecture scales horizontally on both tiers: more app instances behind the same URL, and more Lakebase read replicas for map traffic.</li>
+  </ul>
+  <h3>Why it stays fast</h3>
+  <ul>
+    <li>Each map request covers one fixed tile of at most 343 hexagons, so query cost is bounded regardless of zoom.</li>
+    <li>Entitlement scope is evaluated once per query instead of once per row.</li>
+    <li>Responses are cached per scope and dataset version. When data changes, the version changes and stale entries are never served.</li>
+    <li>Browsers revalidate with ETags, so unchanged tiles return in a few hundred bytes.</li>
+  </ul>
+</div>
+
+<!-- APPENDICES -->
+<div class="section">
+  <h2>Appendix A. Metric definitions</h2>
+  <table>
+    <tr><th>Metric</th><th>Definition</th><th>Better when</th></tr>
+    <tr><td>Network health score</td><td>0 to 100 composite of uptime, optical margin, latency, packet loss, throughput against plan and trouble tickets, weighted by subscribers</td><td>Higher</td></tr>
+    <tr><td>Uptime</td><td>Subscriber-weighted availability over the selected period</td><td>Higher</td></tr>
+    <tr><td>ONTs with low optical power</td><td>Share of ONTs receiving below -27 dBm, an early sign of fiber degradation</td><td>Lower</td></tr>
+    <tr><td>Average ONT receive power</td><td>Mean optical receive power at the customer terminal, in dBm</td><td>Higher</td></tr>
+    <tr><td>Latency</td><td>Average round-trip latency, in milliseconds</td><td>Lower</td></tr>
+    <tr><td>Packet loss</td><td>Share of packets lost</td><td>Lower</td></tr>
+    <tr><td>Throughput against plan</td><td>Delivered speed as a share of the subscribed plan speed</td><td>Higher</td></tr>
+    <tr><td>Tickets per 1,000 subscribers per day</td><td>Trouble ticket rate normalised by subscriber base</td><td>Lower</td></tr>
+    <tr><td>Homes impacted by outages</td><td>Homes affected by incidents in the period</td><td>Lower</td></tr>
+    <tr><td>PON fill</td><td>Connected homes as a share of PON port capacity on an OLT</td><td>Below threshold</td></tr>
+    <tr><td>Capacity status</td><td>Exhausted, Augment within six months, or Healthy, from PON fill, peak utilisation and growth</td><td>Healthy</td></tr>
+    <tr><td>Penetration</td><td>Homes connected as a share of homes passed</td><td>Higher</td></tr>
+    <tr><td>Sales opportunity</td><td>Homes passed but not connected</td><td>Context</td></tr>
+    <tr><td>Retail cross-sell</td><td>Reliance Retail customers in the area without Jio Fiber</td><td>Context</td></tr>
+  </table>
+  <h2 style="margin-top:16px">Appendix B. Glossary</h2>
+  <table>
+    <tr><td><b>H3</b></td><td>A global grid of hexagonal cells at multiple resolutions. Resolution 5 cells are about 250 km², resolution 9 cells about 0.1 km².</td></tr>
+    <tr><td><b>OLT</b></td><td>Optical Line Terminal, the exchange-side equipment that serves many homes over passive optical splitters.</td></tr>
+    <tr><td><b>PON</b></td><td>Passive Optical Network, the shared fiber tree from an OLT port to homes.</td></tr>
+    <tr><td><b>FDH</b></td><td>Fiber Distribution Hub, the street cabinet that holds splitters.</td></tr>
+    <tr><td><b>ONT</b></td><td>Optical Network Terminal, the device in the customer's home.</td></tr>
+    <tr><td><b>Lakebase</b></td><td>Databricks managed Postgres, integrated with Unity Catalog and able to sync tables from the lakehouse.</td></tr>
+    <tr><td><b>Synced table</b></td><td>A Lakebase table kept in step with a Unity Catalog Delta table without custom pipelines.</td></tr>
+    <tr><td><b>Row filter / RLS</b></td><td>Database rules that return only the rows a user is entitled to see, applied by Unity Catalog and by Postgres row-level security.</td></tr>
+    <tr><td><b>Databricks App</b></td><td>A web application hosted on Databricks with workspace sign-on and direct, governed access to platform data and AI.</td></tr>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Appendix C. Technology stack</h2>
+  <p>GeoLens is built on Databricks platform services for data, governance, serving, hosting and AI, with permissively licensed open-source libraries for the map experience.</p>
+  <h3>Databricks platform</h3>
+  <table>
+    <tr><th>Layer</th><th>Technology</th><th>Role in GeoLens</th></tr>
+    <tr><td>Storage and processing</td><td>Delta Lake on Unity Catalog (bronze, silver, gold)</td><td>Source data, cleaning, H3 indexing and KPI rollups at H3 resolutions 5 to 9</td></tr>
+    <tr><td>Compute</td><td>Serverless SQL warehouse</td><td>Builds the data model using built-in H3 and spatial SQL functions</td></tr>
+    <tr><td>Governance</td><td>Unity Catalog</td><td>Row filters on 17 gold tables, one entitlements table for region and metro scope, documented tables and columns</td></tr>
+    <tr><td>Serving database</td><td>Lakebase (managed PostgreSQL 17 with PostGIS 3.5), primary and read replica</td><td>Millisecond map queries, vector tiles for fiber routes, row-level security, live operational tables</td></tr>
+    <tr><td>Lakehouse to Lakebase</td><td>Synced tables</td><td>Keeps 18 gold tables in step with Postgres without custom pipelines</td></tr>
+    <tr><td>Application hosting</td><td>Databricks Apps</td><td>Hosts the API and web interface with workspace single sign-on and a least-privilege service identity</td></tr>
+    <tr><td>AI</td><td>Foundation Model APIs through AI Gateway</td><td>Powers the Ask GeoLens assistant, which queries governed data and drives the map</td></tr>
+    <tr><td>Testing and operations</td><td>Lakeflow Jobs (serverless)</td><td>In-region load testing</td></tr>
+  </table>
+  <h3>Application backend</h3>
+  <table>
+    <tr><th>Component</th><th>Technology</th></tr>
+    <tr><td>API framework</td><td>Python with FastAPI and Uvicorn</td></tr>
+    <tr><td>Database access</td><td>psycopg2 with a pooled, automatically refreshed OAuth connection to Lakebase</td></tr>
+    <tr><td>Live updates</td><td>PostgreSQL LISTEN/NOTIFY, delivered to browsers as server-sent events</td></tr>
+    <tr><td>Change detection</td><td>A single elected background worker detects synced-table refreshes and advances dataset versions</td></tr>
+    <tr><td>Performance</td><td>Shared caches keyed by scope and dataset version, ETag revalidation, compression, server timing metrics</td></tr>
+  </table>
+  <h3>Map and user interface</h3>
+  <table>
+    <tr><th>Component</th><th>Technology</th></tr>
+    <tr><td>Web framework</td><td>React 18, built with Vite</td></tr>
+    <tr><td>Map visualisation</td><td>deck.gl 9 (hexagon, point, vector tile and line layers)</td></tr>
+    <tr><td>Map engine</td><td>MapLibre GL, integrated through react-map-gl</td></tr>
+    <tr><td>Hexagon grid</td><td>H3 (h3-js) for roll-ups, drill-down and cell geometry</td></tr>
+    <tr><td>Basemap</td><td>Dark Matter and Positron vector basemap styles over OpenStreetMap data, currently served from a public basemap CDN; can be replaced by a basemap self-hosted inside Databricks</td></tr>
+    <tr><td>Charts and widgets</td><td>Lightweight custom SVG components with colourblind-safe palettes</td></tr>
+  </table>
+  <h3>Open-source licences</h3>
+  <p>All non-Databricks components are permissively licensed: React and deck.gl (MIT), MapLibre GL (BSD), H3 (Apache 2.0), PostgreSQL and PostGIS (PostgreSQL licence and GPL for the PostGIS server extension, used as a managed service). Map data is from OpenStreetMap (ODbL), credited on the map. The only external service in the current build is the basemap CDN.</p>
+</div>
+
+<div class="section">
+  <h2>Appendix D. Basemap: removing the CARTO dependency</h2>
+  <p>GeoLens was built to run entirely on Databricks and open-source software. In the current build there is one remaining third-party dependency: the background basemap is loaded from CARTO's public basemap service. This appendix explains exactly what that dependency covers and how it is removed.</p>
+
+  <h3>What depends on CARTO today</h3>
+  <table>
+    <tr><th>Item</th><th>Today</th><th>Effect</th></tr>
+    <tr><td>Basemap styles</td><td>Dark Matter (Jio Fiber view) and Positron (light view), loaded from <code>basemaps.cartocdn.com</code></td><td>The grey or dark background map: roads, water, land use, place names and borders</td></tr>
+    <tr><td>Basemap tiles</td><td>Vector tiles served by CARTO's content delivery network</td><td>Each user's browser downloads background tiles directly from CARTO</td></tr>
+    <tr><td>Fonts and map icons</td><td>Label fonts and sprites referenced by the CARTO styles</td><td>Used to draw place names on the background map</td></tr>
+    <tr><td>Attribution</td><td>"© CARTO, © OpenStreetMap contributors" shown on the map</td><td>Required while CARTO's service is used</td></tr>
+  </table>
+
+  <h3>What does not depend on CARTO</h3>
+  <ul>
+    <li>All Jio Fiber data, hexagons, incidents, technicians, OLTs, fiber routes, KPIs and widgets, which are served from Lakebase by the GeoLens app.</li>
+    <li>Security, entitlements, live updates and the AI assistant, which run on Unity Catalog, Lakebase, Databricks Apps and Foundation Model APIs.</li>
+    <li>The map software itself: deck.gl, MapLibre GL and H3 are open source and need no CARTO account, key, SDK or licence.</li>
+  </ul>
+  <p>No CARTO account, API key, software development kit or paid service is used anywhere in GeoLens.</p>
+
+  <h3>Why remove it</h3>
+  <ul>
+    <li><b>Licensing.</b> CARTO's free basemaps are intended for limited use. Production use at Jio scale would require a commercial agreement.</li>
+    <li><b>Network access.</b> Users' browsers must reach an external service on the internet, which may not be allowed inside a restricted enterprise network.</li>
+    <li><b>Availability and control.</b> The look and uptime of the background map depend on a third party.</li>
+  </ul>
+
+  <h3>Open alternatives considered</h3>
+  <table>
+    <tr><th>Option</th><th>Look compared with today</th><th>Where it runs</th><th>Licence</th></tr>
+    <tr><td><b>OpenMapTiles data with the open Dark Matter and Positron styles</b></td><td>Nearly identical; same colours, fonts and layering</td><td>Inside Databricks</td><td>Open (BSD, CC-BY 4.0, ODbL)</td></tr>
+    <tr><td>Protomaps with its own light and dark themes</td><td>Similar minimal feel, different palette and labels</td><td>Inside Databricks</td><td>Open (BSD, ODbL)</td></tr>
+    <tr><td>OpenFreeMap public service</td><td>Very close</td><td>Volunteer-run public servers</td><td>Open, but an external dependency</td></tr>
+    <tr><td>Commercial basemap providers</td><td>Close</td><td>Provider cloud</td><td>Paid licence</td></tr>
+  </table>
+  <p>The Dark Matter and Positron styles are themselves open source, published through the OpenMapTiles project. Keeping them preserves the look users already know, while the tiles, fonts and icons move inside the Databricks environment.</p>
+
+  <h3>How the dependency is removed</h3>
+  <table>
+    <tr><th>Step</th><th>What happens</th></tr>
+    <tr><td>1. Build the basemap</td><td>Generate OpenStreetMap vector tiles in the OpenMapTiles schema for India, with full street detail for the served metros, using the open-source Planetiler tool on Databricks serverless compute.</td></tr>
+    <tr><td>2. Store it in Databricks</td><td>Keep the tile archive in a Unity Catalog Volume and load the tiles into Lakebase, so the basemap is served the same governed, low-latency way as the network data.</td></tr>
+    <tr><td>3. Serve it from GeoLens</td><td>Add a basemap tile endpoint to the GeoLens app with caching and revalidation, and bundle the open label fonts and map icons with the application.</td></tr>
+    <tr><td>4. Switch the map</td><td>Point the map engine at self-hosted copies of the Dark Matter and Positron styles and update the on-map attribution.</td></tr>
+    <tr><td>5. Verify</td><td>Rerun the end-to-end storyline and confirm the browser makes no requests to any external map service.</td></tr>
+    <tr><td>6. Keep it current</td><td>Rebuild the basemap on a schedule with Lakeflow Jobs to pick up new roads and places from OpenStreetMap.</td></tr>
+  </table>
+
+  <h3>After the change</h3>
+  <ul>
+    <li>No CARTO service, content delivery network, account or licence is used.</li>
+    <li>The application works inside a closed network: every map request goes to the GeoLens app URL.</li>
+    <li>The map keeps the same look and feel, with small differences in label density at some zoom levels.</li>
+    <li>The only remaining obligation is attribution on the map: "© OpenMapTiles © OpenStreetMap contributors", with credit for the open style design as its licence requires.</li>
+  </ul>
+</div>
+
+</body>
+</html>

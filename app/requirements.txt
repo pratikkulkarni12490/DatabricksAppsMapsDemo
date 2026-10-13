@@ -1,0 +1,7 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+psycopg2-binary>=2.9.9
+databricks-sdk>=0.80.0
+cachetools>=5.3
+requests>=2.32
+pydantic>=2.7
